@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "nimbus-pyromancy",
+	"version": "${version}",
+	"name": "Nimbu's: Pyromancy",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/nimbus-pyromancy/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.nimbu.nimbus_pyromancy.NimbusPyromancy"
+		],
+		"fabric-datagen": [
+			"net.nimbu.nimbus_pyromancy.NimbusPyromancyDataGenerator"
+		]
+	},
+	"mixins": [
+		"nimbus-pyromancy.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.2",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
