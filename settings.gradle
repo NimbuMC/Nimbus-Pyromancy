@@ -10,4 +10,4 @@ pluginManagement {
 }
 
 // Should match your modid
-rootProject.name = 'nimbus-pyromancy'
+rootProject.name = 'nimbuspyromancy'
