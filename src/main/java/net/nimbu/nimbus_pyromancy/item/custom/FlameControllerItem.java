@@ -47,10 +47,6 @@ public class FlameControllerItem extends Item {
     @Override
     public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
 
-        //killmekillmekillmekillmekillmekillmekillmekillmekillmekillmekillmekillmekillmekillmekillme
-
-        //the bug is only with flame entities its prolly with that specifically... they're not getting noticed as an entity by the function sometimes - maybe unprioritised due to the large boundary?
-
         if (world.isClient()) return;
         if (!(user instanceof PlayerEntity player)) return;
 
@@ -67,13 +63,15 @@ public class FlameControllerItem extends Item {
 
         //collects all flame entities within radius
         List<Entity> entities = world.getOtherEntities(user, controlBox);
+        int count=0;
         for (Entity entity : entities) {
             if (entity instanceof FlameEntity flame) {
                 flame.setGatherLocation(centrePos);
                 System.out.println("Found set to x:"+centrePos.x+" y:"+centrePos.y+" z:"+centrePos.z);
             }
-            System.out.println("Found entity");
-            //entity.setPos(centrePos.x,centrePos.y,centrePos.z);
+            count++;
+            System.out.println("Found entity no."+count+" of: "+entity.getName());
+            entity.requestTeleport(centrePos.x,centrePos.y,centrePos.z);
         }
     }
 
