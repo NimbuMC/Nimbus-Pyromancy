@@ -9,11 +9,10 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.nimbu.nimbus_pyromancy.entity.custom.FlameEntity;
+import net.nimbu.nimbus_pyromancy.entity.custom.PyroflameEntity;
 
 import java.util.List;
 
@@ -25,23 +24,7 @@ public class FlameControllerItem extends Item {
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         user.setCurrentHand(hand);
-//        ItemStack itemStack = user.getStackInHand(hand);
-//
-//        double radius = 5.0; //size of control area based on skill?
-//        Vec3d centrePos = user.getPos().add(1,1,0); //where the flames are dragged to
-//
-//        Box controlBox = new Box(
-//                centrePos.x - radius, centrePos.y - radius, centrePos.z - radius,
-//                centrePos.x + radius, centrePos.y + radius, centrePos.z + radius
-//        );
-//        List<Entity> entities = world.getOtherEntities(user, controlBox);
-//        for (Entity entity : entities) {
-//            entity.setPos(centrePos.x,centrePos.y,centrePos.z);
-//        }
-
-
         return TypedActionResult.consume(user.getStackInHand(hand));
-        //return TypedActionResult.success(itemStack);
     }
 
     @Override
@@ -51,27 +34,26 @@ public class FlameControllerItem extends Item {
         if (!(user instanceof PlayerEntity player)) return;
 
         double radius = 5.0; //size of control area based on skill?
-        Vec3d centrePos = player.getPos().add(1,1,0); //where the flames are dragged to
+
+        Vec3d eyePos = player.getEyePos();
+        Vec3d lookVec = player.getRotationVec(1.0F); // direction player is looking
+        double distance = 1.5; // 1.5 blocks in front
+        Vec3d centrePos = eyePos.add(lookVec.multiply(distance)); //where the flames are dragged to
 
         Box controlBox = new Box(
                 centrePos.x - radius, centrePos.y - radius, centrePos.z - radius,
                 centrePos.x + radius, centrePos.y + radius, centrePos.z + radius
         );
 
-        if (world instanceof ServerWorld serverWorld)
-            drawDebugBox(serverWorld,controlBox);
+//        if (world instanceof ServerWorld serverWorld)
+//            drawDebugBox(serverWorld,controlBox);
 
         //collects all flame entities within radius
         List<Entity> entities = world.getOtherEntities(user, controlBox);
-        int count=0;
         for (Entity entity : entities) {
-            if (entity instanceof FlameEntity flame) {
+            if (entity instanceof PyroflameEntity flame) {
                 flame.setGatherLocation(centrePos);
-                System.out.println("Found set to x:"+centrePos.x+" y:"+centrePos.y+" z:"+centrePos.z);
             }
-            count++;
-            System.out.println("Found entity no."+count+" of: "+entity.getName());
-            entity.requestTeleport(centrePos.x,centrePos.y,centrePos.z);
         }
     }
 
