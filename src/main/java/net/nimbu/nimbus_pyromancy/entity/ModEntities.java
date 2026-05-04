@@ -10,8 +10,8 @@ import net.nimbu.nimbus_pyromancy.entity.custom.PyroflameEntity;
 
 public class ModEntities {
 
-    public static final EntityType<PyroflameEntity> FLAME = Registry.register(Registries.ENTITY_TYPE,
-            Identifier.of(NimbusPyromancy.MOD_ID, "flame"),
+    public static final EntityType<PyroflameEntity> PYROFLAME = Registry.register(Registries.ENTITY_TYPE,
+            Identifier.of(NimbusPyromancy.MOD_ID, "pyroflame"),
             EntityType.Builder.<PyroflameEntity>create(PyroflameEntity::new, SpawnGroup.MISC)
                     .dimensions(0.25f,0.25f).maxTrackingRange(128).build());
 

@@ -37,7 +37,7 @@ public class FlameControllerItem extends Item {
 
         Vec3d eyePos = player.getEyePos();
         Vec3d lookVec = player.getRotationVec(1.0F); // direction player is looking
-        double distance = 1.5; // 1.5 blocks in front
+        double distance = 2; // 1.5 blocks in front
         Vec3d centrePos = eyePos.add(lookVec.multiply(distance)); //where the flames are dragged to
 
         Box controlBox = new Box(

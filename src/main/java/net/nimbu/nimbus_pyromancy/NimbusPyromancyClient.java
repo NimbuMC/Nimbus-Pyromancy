@@ -13,8 +13,8 @@ public class NimbusPyromancyClient implements ClientModInitializer {
     public void onInitializeClient() {
 
 
-        EntityRendererRegistry.register(ModEntities.FLAME, EmptyEntityRenderer::new);
-        ParticleFactoryRegistry.getInstance().register(ModParticleTypes.FLAME_PARTICLE, PyroflameParticle.Factory::new);
+        EntityRendererRegistry.register(ModEntities.PYROFLAME, EmptyEntityRenderer::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticleTypes.PYROFLAME, PyroflameParticle.Factory::new);
 
     }
 }

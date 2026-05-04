@@ -6,9 +6,12 @@ import net.minecraft.entity.MovementType;
 import net.minecraft.entity.Ownable;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Position;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.nimbu.nimbus_pyromancy.particle.ModParticleTypes;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -34,7 +37,8 @@ public class PyroflameEntity extends Entity implements Ownable {
 
     @Override
     public void tick() {
-        if (!this.getWorld().isClient) {
+        World world = this.getWorld();
+        if (!world.isClient) {
 
             if (this.mergeTarget != null) {
                 this.mergeTarget.absorbFlame(this.heat);
@@ -69,6 +73,13 @@ public class PyroflameEntity extends Entity implements Ownable {
                     return;
                 }
             }
+
+            //create particle effect
+            Position pos = this.getPos();
+//            ((ServerWorld) world).spawnParticles(ModParticleTypes.PYROFLAME,
+//                    pos.getX(), pos.getY(), pos.getZ(), 5, 0.2, 0.2, 0.2, 0.0);
+            ((ServerWorld) world).spawnParticles(ParticleTypes.FLAME,
+                    pos.getX(), pos.getY(), pos.getZ(), 5, 0.2, 0.2, 0.2, 0.0);
         }
         this.absorbing=false;
         this.move(MovementType.SELF, this.getVelocity());
