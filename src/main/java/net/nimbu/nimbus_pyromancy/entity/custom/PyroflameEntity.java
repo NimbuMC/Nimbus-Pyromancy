@@ -76,10 +76,8 @@ public class PyroflameEntity extends Entity implements Ownable {
 
             //create particle effect
             Position pos = this.getPos();
-//            ((ServerWorld) world).spawnParticles(ModParticleTypes.PYROFLAME,
-//                    pos.getX(), pos.getY(), pos.getZ(), 5, 0.2, 0.2, 0.2, 0.0);
-            ((ServerWorld) world).spawnParticles(ParticleTypes.FLAME,
-                    pos.getX(), pos.getY(), pos.getZ(), 5, 0.2, 0.2, 0.2, 0.0);
+            ((ServerWorld) world).spawnParticles(ModParticleTypes.PYROFLAME,
+                    pos.getX(), pos.getY(), pos.getZ(), this.heat/4, 0.2, 0.2, 0.2, 0.2);
         }
         this.absorbing=false;
         this.move(MovementType.SELF, this.getVelocity());

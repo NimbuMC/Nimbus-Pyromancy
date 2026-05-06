@@ -6,18 +6,34 @@ import net.minecraft.particle.SimpleParticleType;
 import org.jetbrains.annotations.Nullable;
 
 public class PyroflameParticle extends SpriteBillboardParticle {
+
+    private final SpriteProvider spriteProvider;
+
     protected PyroflameParticle(ClientWorld clientWorld, double x, double y, double z,
                                 SpriteProvider spriteProvider, double xSpeed, double ySpeed, double zSpeed) {
         super(clientWorld, x, y, z, xSpeed, ySpeed, zSpeed);
-
+        this.spriteProvider = spriteProvider;
         this.velocityMultiplier=0.8f;
-        this.maxAge=8;
+        this.maxAge=9;
         this.setSpriteForAge(spriteProvider);
     }
 
     @Override
     public ParticleTextureSheet getType() {
         return ParticleTextureSheet.PARTICLE_SHEET_LIT;
+    }
+
+    @Override
+    public void tick() {
+        this.prevPosX = this.x;
+        this.prevPosY = this.y;
+        this.prevPosZ = this.z;
+        if (this.age++ >= this.maxAge) {
+            this.markDead();
+        } else {
+            this.move(this.velocityX, this.velocityY, this.velocityZ);
+            this.setSpriteForAge(this.spriteProvider);
+        }
     }
 
     @Override

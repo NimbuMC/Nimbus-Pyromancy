@@ -1,5 +1,7 @@
 package net.nimbu.nimbus_pyromancy.item.custom;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -9,9 +11,12 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.nimbu.nimbus_pyromancy.entity.ModEntities;
 import net.nimbu.nimbus_pyromancy.entity.custom.PyroflameEntity;
 
 import java.util.List;
@@ -37,7 +42,7 @@ public class FlameControllerItem extends Item {
 
         Vec3d eyePos = player.getEyePos();
         Vec3d lookVec = player.getRotationVec(1.0F); // direction player is looking
-        double distance = 2; // 1.5 blocks in front
+        double distance = 3; // 1.5 blocks in front
         Vec3d centrePos = eyePos.add(lookVec.multiply(distance)); //where the flames are dragged to
 
         Box controlBox = new Box(
@@ -53,6 +58,32 @@ public class FlameControllerItem extends Item {
         for (Entity entity : entities) {
             if (entity instanceof PyroflameEntity flame) {
                 flame.setGatherLocation(centrePos);
+            }
+        }
+
+        // convert box bounds to block positions
+        int minX = MathHelper.floor(controlBox.minX);
+        int minY = MathHelper.floor(controlBox.minY);
+        int minZ = MathHelper.floor(controlBox.minZ);
+
+        int maxX = MathHelper.floor(controlBox.maxX);
+        int maxY = MathHelper.floor(controlBox.maxY);
+        int maxZ = MathHelper.floor(controlBox.maxZ);
+
+        BlockPos.Mutable mutable = new BlockPos.Mutable(); //mutable block positions can be changed without being re-instantiated
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    mutable.set(x, y, z);
+                    BlockState state = world.getBlockState(mutable);
+                    if (state.isOf(Blocks.FIRE)) {
+                        world.setBlockState(mutable, Blocks.AIR.getDefaultState());
+                        PyroflameEntity flame = ModEntities.PYROFLAME.create(world);
+                        flame.setPosition(x, y, z);
+                        world.spawnEntity(flame);
+                    }
+                }
             }
         }
     }

@@ -10,7 +10,7 @@ import net.nimbu.nimbus_pyromancy.NimbusPyromancy;
 public class ModParticleTypes {
 
     public static final SimpleParticleType PYROFLAME =
-            registerParticle("pyroflame_particle", FabricParticleTypes.simple(true)); //will always spawn, even if particles are turned off in settings
+            registerParticle("pyroflame", FabricParticleTypes.simple(true)); //will always spawn, even if particles are turned off in settings
 
     private static SimpleParticleType registerParticle(String name, SimpleParticleType simpleParticleType){
         return Registry.register(Registries.PARTICLE_TYPE, Identifier.of(NimbusPyromancy.MOD_ID, name), simpleParticleType);
