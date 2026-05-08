@@ -38,7 +38,7 @@ public class PyroflameParticle extends SpriteBillboardParticle {
 
     @Override
     protected int getBrightness(float tint) {
-        return 255;
+        return 0xF000F0;
     }
 
     public static class Factory implements ParticleFactory<SimpleParticleType> {

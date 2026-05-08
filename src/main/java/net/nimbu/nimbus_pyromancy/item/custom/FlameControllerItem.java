@@ -43,23 +43,16 @@ public class FlameControllerItem extends Item {
         Vec3d eyePos = player.getEyePos();
         Vec3d lookVec = player.getRotationVec(1.0F); // direction player is looking
         double distance = 3; // 1.5 blocks in front
-        Vec3d centrePos = eyePos.add(lookVec.multiply(distance)); //where the flames are dragged to
+        Vec3d controlPos = eyePos.add(lookVec.multiply(distance)); //where the flames are dragged to
 
         Box controlBox = new Box(
-                centrePos.x - radius, centrePos.y - radius, centrePos.z - radius,
-                centrePos.x + radius, centrePos.y + radius, centrePos.z + radius
+                controlPos.x - radius, controlPos.y - radius, controlPos.z - radius,
+                controlPos.x + radius, controlPos.y + radius, controlPos.z + radius
         );
 
-//        if (world instanceof ServerWorld serverWorld)
-//            drawDebugBox(serverWorld,controlBox);
 
-        //collects all flame entities within radius
-        List<Entity> entities = world.getOtherEntities(user, controlBox);
-        for (Entity entity : entities) {
-            if (entity instanceof PyroflameEntity flame) {
-                flame.setGatherLocation(centrePos);
-            }
-        }
+
+        //-----------Turn fire into pyroflames-------------
 
         // convert box bounds to block positions
         int minX = MathHelper.floor(controlBox.minX);
@@ -77,15 +70,55 @@ public class FlameControllerItem extends Item {
                 for (int z = minZ; z <= maxZ; z++) {
                     mutable.set(x, y, z);
                     BlockState state = world.getBlockState(mutable);
-                    if (state.isOf(Blocks.FIRE)) {
-                        world.setBlockState(mutable, Blocks.AIR.getDefaultState());
-                        PyroflameEntity flame = ModEntities.PYROFLAME.create(world);
-                        flame.setPosition(x, y, z);
-                        world.spawnEntity(flame);
+                    if (state.isOf(Blocks.FIRE)) { //if fire found
+                        //check is in circle of the radius
+                        Vec3d blockCentre = Vec3d.ofCenter(mutable);
+                        Vec3d toTarget = controlPos.subtract(blockCentre);
+                        if (toTarget.length()<=radius-0.5) { //check a little closer than radius for smoothness
+                            world.setBlockState(mutable, Blocks.AIR.getDefaultState());
+                            PyroflameEntity flame = ModEntities.PYROFLAME.create(world);
+                            flame.setPosition(x, y, z);
+                            world.spawnEntity(flame);
+                        }
                     }
                 }
             }
         }
+
+
+
+
+        //--------------Collects all pyroflame entities within radius--------------
+
+        List<Entity> entities = world.getOtherEntities(user, controlBox);
+        for (Entity entity : entities) {
+            if (entity instanceof PyroflameEntity flame) {
+                Vec3d toTarget = controlPos.subtract(flame.getPos());
+                double distanceToControlPoint = toTarget.length();
+
+                if(distanceToControlPoint<=radius) { //only do anything if with the radius
+
+                    Vec3d direction = toTarget.normalize();
+                    double speed = 1;
+                    if (distanceToControlPoint<speed) {
+                        speed = distanceToControlPoint;
+                    }
+
+                    speed = Math.max(0, speed); //stops negative velocities
+
+                    flame.setVelocity(direction.multiply(speed));
+                    flame.velocityModified = true;
+                    flame.setOwner(user);
+                }
+            }
+        }
+
+
+
+
+
+        //        if (world instanceof ServerWorld serverWorld)
+//            drawDebugBox(serverWorld,controlBox);
     }
 
     @Override

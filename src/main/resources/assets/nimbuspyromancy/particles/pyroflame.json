@@ -1,9 +1,9 @@
 {
   "textures": [
+    "nimbuspyromancy:pyroflame_0",
     "nimbuspyromancy:pyroflame_1",
     "nimbuspyromancy:pyroflame_2",
     "nimbuspyromancy:pyroflame_3",
-    "nimbuspyromancy:pyroflame_4",
-    "nimbuspyromancy:pyroflame_5"
+    "nimbuspyromancy:pyroflame_4"
   ]
 }
