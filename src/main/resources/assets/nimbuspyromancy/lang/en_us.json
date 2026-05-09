@@ -1,3 +1,6 @@
 {
-  "item.nimbuspyromancy.flame_controller": "Flame Controller"
+  "item.nimbuspyromancy.flame_controller": "Flame Controller",
+  "category.nimbuspyromancy.controls": "Nimbu's Pyromancy",
+  "key.nimbuspyromancy.absorb_heat": "Absorb Heat",
+  "key.nimbuspyromancy.vent_heat": "Vent Heat"
 }

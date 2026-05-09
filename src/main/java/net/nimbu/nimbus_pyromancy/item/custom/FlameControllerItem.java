@@ -8,6 +8,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -16,6 +17,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.nimbu.nimbus_pyromancy.NimbusPyromancyClient;
 import net.nimbu.nimbus_pyromancy.entity.ModEntities;
 import net.nimbu.nimbus_pyromancy.entity.custom.PyroflameEntity;
 
@@ -65,20 +67,19 @@ public class FlameControllerItem extends Item {
 
         BlockPos.Mutable mutable = new BlockPos.Mutable(); //mutable block positions can be changed without being re-instantiated
 
+
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
                     mutable.set(x, y, z);
                     BlockState state = world.getBlockState(mutable);
-                    if (state.isOf(Blocks.FIRE)) { //if fire found
+                    if (state.isIn(BlockTags.FIRE)) { //if fire found
                         //check is in circle of the radius
                         Vec3d blockCentre = Vec3d.ofCenter(mutable);
                         Vec3d toTarget = controlPos.subtract(blockCentre);
                         if (toTarget.length()<=radius-0.5) { //check a little closer than radius for smoothness
                             world.setBlockState(mutable, Blocks.AIR.getDefaultState());
-                            PyroflameEntity flame = ModEntities.PYROFLAME.create(world);
-                            flame.setPosition(x, y, z);
-                            world.spawnEntity(flame);
+                            spawnFlame(world,x,y,z,new Vec3d(0,0,0),100);
                         }
                     }
                 }
@@ -103,9 +104,6 @@ public class FlameControllerItem extends Item {
                     if (distanceToControlPoint<speed) {
                         speed = distanceToControlPoint;
                     }
-
-                    speed = Math.max(0, speed); //stops negative velocities
-
                     flame.setVelocity(direction.multiply(speed));
                     flame.velocityModified = true;
                     flame.setOwner(user);
@@ -122,8 +120,65 @@ public class FlameControllerItem extends Item {
     }
 
     @Override
-    public int getMaxUseTime(ItemStack stack, LivingEntity user) {
-        return 72000;
+    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
+        super.inventoryTick(stack, world, entity, slot, selected);
+        if (world.isClient()) return;
+        if (!(entity instanceof PlayerEntity player)) return;
+
+        if (selected) {
+            if (NimbusPyromancyClient.ventHeat.isPressed()) { //if key pressed
+                double yPos = player.getY() + 1;
+                int heat = 5;
+                double xVel = Math.random() - 0.5;
+                double zVel = Math.random() - 0.5;
+                Vec3d velocity = new Vec3d(xVel, 0, zVel).normalize().multiply(0.5);
+                spawnFlame(world, player.getX(), yPos, player.getZ(), velocity, heat);
+            }
+
+            if (NimbusPyromancyClient.absorbHeat.isPressed()) {
+                double radius = 1.5;
+
+                Vec3d eyePos = player.getEyePos();
+                Vec3d lookVec = player.getRotationVec(1.0F); // direction player is looking
+                double distance = 3; // 1.5 blocks in front
+                Vec3d controlPos = eyePos.add(lookVec.multiply(distance)); //where the flames are dragged to
+                Box controlBox = new Box(
+                        controlPos.x - radius, controlPos.y - radius, controlPos.z - radius,
+                        controlPos.x + radius, controlPos.y + radius, controlPos.z + radius
+                );
+                List<Entity> entities = world.getOtherEntities(player, controlBox);
+                for (Entity nonPlayerEntity : entities) {
+                    if (nonPlayerEntity instanceof PyroflameEntity flame) {
+                        Vec3d toTarget = controlPos.subtract(flame.getPos());
+                        double distanceToControlPoint = toTarget.length();
+
+                        if (distanceToControlPoint <= radius) { //only do anything if within the radius
+                            //do NOT travel to the control point. travel to the player for absorption
+
+                            Vec3d toPlayer = player.getEyePos().subtract(flame.getPos());
+                            Vec3d direction = toPlayer.normalize();
+                            double speed = 1;
+                            if (toPlayer.length() < speed) {
+                                speed = distanceToControlPoint;
+                            }
+                            flame.addVelocity(direction.multiply(speed));
+                            flame.velocityModified = true;
+                            flame.setOwner(player);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void spawnFlame(World world, double x, double y, double z, Vec3d velocity, int heat) {
+        PyroflameEntity flame = ModEntities.PYROFLAME.create(world);
+        if (flame == null) return;
+        flame.setHeat(heat);
+        flame.refreshPositionAndAngles(x, y, z, 0, 0);
+        flame.setVelocity(velocity);
+        world.spawnEntity(flame);
     }
 
     private void drawDebugBox(ServerWorld world, Box box) {

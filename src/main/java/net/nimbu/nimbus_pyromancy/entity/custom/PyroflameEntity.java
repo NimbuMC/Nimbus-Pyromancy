@@ -101,12 +101,16 @@ public class PyroflameEntity extends ProjectileEntity implements Ownable {
         return this.heat;
     }
 
-    public void addHeat(int heat){
+    public void setHeat(int heat){
         this.heat=heat;
     }
 
-    public void absorbFlame(int heat){
+    public void addHeat(int heat){
         this.heat+=heat;
+    }
+
+    public void absorbFlame(int heat){
+        this.addHeat(heat);
     }
 
     @Override
@@ -153,18 +157,22 @@ public class PyroflameEntity extends ProjectileEntity implements Ownable {
     protected void onBlockHit(BlockHitResult hitResult) {
         super.onBlockHit(hitResult);
         World world = this.getWorld();
-        if(heat<150) { //only do small fire for low heat values
-            BlockPos pos = hitResult.getBlockPos().offset(hitResult.getSide());
-            if (world.getBlockState(pos).isAir()) {
-                BlockState fireState = AbstractFireBlock.getState(world, pos);
+        if (!world.isClient()) {
+            if (heat > 50) {
+                if (heat < 150) { //only do small fire for low heat values
+                    BlockPos pos = hitResult.getBlockPos().offset(hitResult.getSide());
+                    if (world.getBlockState(pos).isAir()) {
+                        BlockState fireState = AbstractFireBlock.getState(world, pos);
 
-                if (fireState.canPlaceAt(world, pos)) {
-                    world.setBlockState(pos, fireState);
+                        if (fireState.canPlaceAt(world, pos)) {
+                            world.setBlockState(pos, fireState);
+                        }
+                    }
+                } else { //explode
+                    float explosionPower = Math.min((float) this.heat / 300, 20); //cap the explosion at 20 because otherwise it will cause severe lag / massive explosion
+                    world.createExplosion(this, this.getX(), this.getY(), this.getZ(), explosionPower, true, World.ExplosionSourceType.MOB);
                 }
             }
-        }
-        else { //explode
-            world.createExplosion(this, this.getX(), this.getY(), this.getZ(), (float) this.heat / 300, true, World.ExplosionSourceType.MOB);
         }
 
 
@@ -173,6 +181,11 @@ public class PyroflameEntity extends ProjectileEntity implements Ownable {
 
     @Override
     public boolean isPushable() {
+        return true;
+    }
+
+    @Override
+    public boolean isFireImmune() {
         return true;
     }
 
