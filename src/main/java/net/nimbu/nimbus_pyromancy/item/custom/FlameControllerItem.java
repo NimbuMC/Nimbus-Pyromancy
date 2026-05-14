@@ -10,6 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
@@ -44,7 +46,7 @@ public class FlameControllerItem extends Item {
 
         Vec3d eyePos = player.getEyePos();
         Vec3d lookVec = player.getRotationVec(1.0F); // direction player is looking
-        double distance = 3; // 1.5 blocks in front
+        double distance = 3; // 3 blocks in front
         Vec3d controlPos = eyePos.add(lookVec.multiply(distance)); //where the flames are dragged to
 
         Box controlBox = new Box(
@@ -97,11 +99,11 @@ public class FlameControllerItem extends Item {
                 Vec3d toTarget = controlPos.subtract(flame.getPos());
                 double distanceToControlPoint = toTarget.length();
 
-                if(distanceToControlPoint<=radius) { //only do anything if with the radius
+                if (distanceToControlPoint <= radius) { //only do anything if with the radius
 
                     Vec3d direction = toTarget.normalize();
                     double speed = 1;
-                    if (distanceToControlPoint<speed) {
+                    if (distanceToControlPoint < speed) {
                         speed = distanceToControlPoint;
                     }
                     flame.setVelocity(direction.multiply(speed));
@@ -136,11 +138,11 @@ public class FlameControllerItem extends Item {
             }
 
             if (NimbusPyromancyClient.absorbHeat.isPressed()) {
-                double radius = 1.5;
+                double radius = 1.7;
 
                 Vec3d eyePos = player.getEyePos();
                 Vec3d lookVec = player.getRotationVec(1.0F); // direction player is looking
-                double distance = 3; // 1.5 blocks in front
+                double distance = 1.5; // 1.5 blocks in front
                 Vec3d controlPos = eyePos.add(lookVec.multiply(distance)); //where the flames are dragged to
                 Box controlBox = new Box(
                         controlPos.x - radius, controlPos.y - radius, controlPos.z - radius,
@@ -155,15 +157,27 @@ public class FlameControllerItem extends Item {
                         if (distanceToControlPoint <= radius) { //only do anything if within the radius
                             //do NOT travel to the control point. travel to the player for absorption
 
+
                             Vec3d toPlayer = player.getEyePos().subtract(flame.getPos());
                             Vec3d direction = toPlayer.normalize();
                             double speed = 1;
                             if (toPlayer.length() < speed) {
-                                speed = distanceToControlPoint;
+                                speed = toPlayer.length();
                             }
-                            flame.addVelocity(direction.multiply(speed));
+
+                            if (toPlayer.length()<0.5){
+                                world.playSound(null, flame.getX(), flame.getY(), flame.getZ(),
+                                        SoundEvents.ENTITY_BREEZE_WIND_BURST,
+                                        SoundCategory.NEUTRAL,
+                                        0.8f,
+                                        0.7f);
+                                flame.discard();
+                                continue;
+                            }
+                            flame.setVelocity(direction.multiply(speed));
                             flame.velocityModified = true;
                             flame.setOwner(player);
+                            flame.lockMovement(); //ensures this is dominant force
                         }
                     }
                 }

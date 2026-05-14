@@ -40,6 +40,7 @@ public class PyroflameEntity extends ProjectileEntity implements Ownable {
     @Nullable
     private PyroflameEntity mergeTarget;
     private double gravity = -0.05;
+    boolean lockMovement = false; //prevents movement being overwritten
 
     public PyroflameEntity(EntityType<?> type, World world) {
         super(ModEntities.PYROFLAME, world);
@@ -67,7 +68,13 @@ public class PyroflameEntity extends ProjectileEntity implements Ownable {
             else{
                 if(this.submergedInWater){
                     this.heat-= 7 + this.heat/20;; //heat dies much faster in water
-                } else{this.heat-= 1 + this.heat/30;}
+                }
+                else if(this.isTouchingWaterOrRain()){ //slightly weaker in rain
+                    this.heat-= 2 + this.heat/30;
+                }
+                else{this.heat-= 1 + this.heat/30;}
+
+
 
                 if (this.heat <= 0) {
                     this.discard();
@@ -94,6 +101,7 @@ public class PyroflameEntity extends ProjectileEntity implements Ownable {
             this.onBlockHit(blockHit);
         }
 
+        lockMovement=false; //automatically remove movement locking
         super.tick();
     }
 
@@ -177,6 +185,16 @@ public class PyroflameEntity extends ProjectileEntity implements Ownable {
 
 
         this.discard();
+    }
+
+    public void lockMovement(){
+        this.lockMovement=true;
+    }
+
+    @Override
+    public void setVelocity(Vec3d velocity) {
+        if (!lockMovement){ //only update velocity if not locked
+        super.setVelocity(velocity);}
     }
 
     @Override
